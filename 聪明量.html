@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADHD哌甲酯剂量计算器</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            padding: 15px;
+            background: #f0f4f8;
+        }
+        .calculator {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: #2d3748;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        select, .radio-group {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 16px;
+        }
+        .radio-option {
+            margin: 10px 0;
+        }
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #ebf8ff;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>哌甲酯剂量计算器</h2>
+        
+        <div class="input-group">
+            <label>1. 年龄组</label>
+            <select id="ageGroup">
+                <option value="child">儿童/青少年</option>
+                <option value="adult">成人</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>2. 当前体重范围</label>
+            <select id="weight">
+                <option value="low">&lt; 30kg</option>
+                <option value="mid">30-50kg</option>
+                <option value="high">&gt; 50kg</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>3. 症状严重程度</label>
+            <div class="radio-group">
+                <div class="radio-option">
+                    <input type="radio" name="severity" value="mild" id="mild" checked>
+                    <label for="mild">轻度（不影响日常生活）</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" name="severity" value="moderate" id="moderate">
+                    <label for="moderate">中度（部分影响功能）</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" name="severity" value="severe" id="severe">
+                    <label for="severe">重度（严重功能障碍）</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>4. 当前剂量阶段</label>
+            <select id="currentDose">
+                <option value="none">未开始用药</option>
+                <option value="low">低剂量（儿童&lt;20mg/日，成人&lt;40mg/日）</option>
+                <option value="medium">中剂量（儿童20-40mg/日，成人40-60mg/日）</option>
+                <option value="high">高剂量（儿童&gt;40mg/日，成人&gt;60mg/日）</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>5. 副作用情况</label>
+            <select id="sideEffects">
+                <option value="none">无显著副作用</option>
+                <option value="mild">轻度（食欲下降/暂时失眠）</option>
+                <option value="severe">严重（心悸/情绪异常）</option>
+            </select>
+        </div>
+
+        <button onclick="calculateDose()">计算建议剂量</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function calculateDose() {
+            // 获取输入值
+            const ageGroup = document.getElementById('ageGroup').value;
+            const weight = document.getElementById('weight').value;
+            const severity = document.querySelector('input[name="severity"]:checked').value;
+            const currentDose = document.getElementById('currentDose').value;
+            const sideEffects = document.getElementById('sideEffects').value;
+
+            // 剂量计算逻辑
+            let doseRange = "";
+            let advice = "";
+
+            // 核心算法
+            if (currentDose === 'none') {
+                // 初始剂量建议
+                let baseDose = ageGroup === 'child' 
+                    ? (weight === 'low' ? '5-10mg' : weight === 'mid' ? '10-18mg' : '18-25mg')
+                    : (weight === 'low' ? '10-20mg' : '20-30mg');
+                
+                doseRange = `初始建议剂量：${baseDose}/日（分2次）`;
+                advice = "从最低推荐剂量开始，每周调整一次";
+
+            } else {
+                // 剂量调整建议
+                const adjustMap = {
+                    'mild-none': '维持当前剂量',
+                    'moderate-none': ageGroup === 'child' ? '增加5-10mg/日' : '增加10-20mg/日',
+                    'severe-none': '考虑速释+缓释联合方案',
+                    'mild-mild': '维持剂量观察1周',
+                    'moderate-mild': '减少5mg/日',
+                    'severe-mild': '减少50%剂量并监测'
+                };
+                
+                const key = `${severity}-${sideEffects}`;
+                doseRange = adjustMap[key] || "需临床评估";
+            }
+
+            // 特殊警告
+            if (sideEffects === 'severe') {
+                advice += "<br><strong style='color:#e53e3e;'>⚠️ 发现严重副作用，建议立即就医</strong>";
+            }
+
+            // 显示结果
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <h3>计算结果</h3>
+                <p>${doseRange}</p>
+                <p>${advice}</p>
+            `;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
