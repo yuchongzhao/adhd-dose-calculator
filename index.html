@@ -29,7 +29,7 @@
         }
         h2 { color: #2b6cb0; margin-bottom: 25px; text-align: center; }
         label { display: block; color: #2d3748; font-weight: 500; margin-bottom: 8px; }
-        input, select, .checkbox-group {
+        input, select {
             width: 100%;
             padding: 12px;
             border: 2px solid #cbd5e0;
@@ -37,17 +37,14 @@
             font-size: 16px;
             margin-bottom: 15px;
         }
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding: 10px;
-        }
+        .checkbox-group { display: flex; flex-direction: column; gap: 15px; }
         .checkbox-item {
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 8px;
-            flex: 1 1 45%;
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 8px;
         }
         button {
             background: #4299e1;
@@ -61,18 +58,34 @@
             transition: background 0.3s;
         }
         #result { margin-top: 25px; padding: 20px; background: #f7fafc; border-radius: 10px; }
-        .history-section { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
-        #historyTable { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        #historyTable th { background: #4299e1; color: white; padding: 12px; text-align: left; }
-        #historyTable td { border: 1px solid #e2e8f0; padding: 12px; }
-        .severity-indicator { width: 100px; height: 8px; background: #e2e8f0; border-radius: 4px; margin: 10px 0; }
-        .severity-progress { height: 100%; background: #48bb78; transition: width 0.3s; }
-        .confirm-box { margin-top: 15px; text-align: center; }
-        .countdown { color: #718096; font-size: 0.9em; }
+        .history-section { margin-top: 30px; }
+        .history-card {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        .history-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .mobile-history {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .desktop-history { display: none; }
+            .mobile-history { display: block; }
+            .history-card > div { margin-bottom: 10px; }
+        }
         @media (prefers-color-scheme: dark) {
             body { background: #1a202c; }
             .calculator { background: #2d3748; }
             input, select { background: #4a5568; border-color: #718096; }
+            .history-card { background: #2d3748; }
         }
     </style>
 </head>
@@ -84,10 +97,10 @@
         <div class="input-group">
             <h3>基本信息</h3>
             <label>年龄（岁）</label>
-            <input type="number" id="age" min="6" max="70" value="18" required>
+            <input type="number" id="age" min="6" max="70" required>
             
             <label>体重（kg）</label>
-            <input type="number" id="weight" min="20" max="150" step="0.1" value="60" required>
+            <input type="number" id="weight" min="20" max="150" step="0.1" required>
         </div>
 
         <!-- 症状评分 -->
@@ -111,36 +124,31 @@
         <div class="input-group">
             <h3>当前剂量</h3>
             <label>每日总剂量（mg）</label>
-            <input type="number" id="currentDose" min="0" max="100" step="5" value="0">
+            <input type="number" id="currentDose" min="0" max="100" step="5" required>
         </div>
 
         <!-- 副作用评估 -->
         <div class="input-group">
-            <h3>副作用评估（多选）</h3>
+            <h3>副作用评估</h3>
             <div class="checkbox-group">
                 <div class="checkbox-item">
-                    <input type="checkbox" id="appetite" value="appetite">
-                    <label for="appetite">食欲减退</label>
+                    <label><input type="checkbox" id="appetite" value="appetite"> 食欲减退</label>
                     <input type="range" min="1" max="5" value="3" class="severity">
                 </div>
                 <div class="checkbox-item">
-                    <input type="checkbox" id="sleep" value="sleep">
-                    <label for="sleep">入睡困难</label>
+                    <label><input type="checkbox" id="sleep" value="sleep"> 入睡困难</label>
                     <input type="range" min="1" max="5" value="3" class="severity">
                 </div>
                 <div class="checkbox-item">
-                    <input type="checkbox" id="headache" value="headache">
-                    <label for="headache">头痛</label>
+                    <label><input type="checkbox" id="headache" value="headache"> 头痛</label>
                     <input type="range" min="1" max="5" value="3" class="severity">
                 </div>
                 <div class="checkbox-item">
-                    <input type="checkbox" id="anxiety" value="anxiety">
-                    <label for="anxiety">焦虑紧张</label>
+                    <label><input type="checkbox" id="anxiety" value="anxiety"> 焦虑紧张</label>
                     <input type="range" min="1" max="5" value="3" class="severity">
                 </div>
                 <div class="checkbox-item">
-                    <input type="checkbox" id="heart" value="heart">
-                    <label for="heart">心悸</label>
+                    <label><input type="checkbox" id="heart" value="heart"> 心悸</label>
                     <input type="range" min="1" max="5" value="3" class="severity">
                 </div>
             </div>
@@ -152,24 +160,34 @@
         <!-- 历史记录 -->
         <div class="history-section">
             <h3>📅 用药记录</h3>
-            <table id="historyTable">
-                <thead>
-                    <tr>
-                        <th>日期</th>
-                        <th>原剂量</th>
-                        <th>症状评分</th>
-                        <th>副作用</th>
-                        <th>新剂量</th>
-                    </tr>
-                </thead>
-                <tbody id="historyBody"></tbody>
-            </table>
+            <div class="desktop-history">
+                <div class="history-row header">
+                    <div>日期</div>
+                    <div>原剂量</div>
+                    <div>症状评分</div>
+                    <div>副作用</div>
+                    <div>新剂量</div>
+                </div>
+                <div id="historyBody"></div>
+            </div>
+            <div class="mobile-history" id="mobileHistory"></div>
         </div>
     </div>
 
     <script>
         let currentCalculation = null;
         let countdownTimer = null;
+
+        // 初始化自动填充
+        function initAutoFill() {
+            const history = JSON.parse(localStorage.getItem('treatmentHistory')) || [];
+            if (history.length > 0) {
+                const latest = history[0];
+                document.getElementById('age').value = latest.age || '';
+                document.getElementById('weight').value = latest.weight || '';
+                document.getElementById('currentDose').value = latest.newDose.replace('mg','') || '';
+            }
+        }
 
         // 核心计算逻辑
         function calculateDose() {
@@ -198,19 +216,17 @@
                 }
             });
 
-            // 计算症状总分
+            // 计算调整量
             const symptomScore = (
                 inputs.symptoms.attention * 0.5 +
                 inputs.symptoms.hyperactivity * 0.3 +
                 inputs.symptoms.impulsivity * 0.2
             ).toFixed(1);
 
-            // 计算调整量
             let adjustment = 0;
             if (symptomScore >= 4) adjustment += 10;
             else if (symptomScore >= 3) adjustment += 5;
 
-            // 副作用影响
             const sideEffectScore = inputs.sideEffects.reduce((sum, eff) => sum + eff.severity, 0);
             if (sideEffectScore >= 15) adjustment -= 10;
             else if (sideEffectScore >= 10) adjustment -= 5;
@@ -225,6 +241,8 @@
             // 存储当前计算结果
             currentCalculation = {
                 timestamp: new Date(),
+                age: inputs.age,
+                weight: inputs.weight,
                 originalDose: inputs.currentDose,
                 symptoms: inputs.symptoms,
                 sideEffects: inputs.sideEffects,
@@ -233,12 +251,11 @@
                 sideEffectScore: sideEffectScore
             };
 
-            // 显示结果和确认按钮
             showResult(newDose, adjustment);
             showConfirmation();
         }
 
-        // 显示计算结果
+        // 显示结果和确认按钮
         function showResult(newDose, adjustment) {
             const resultDiv = document.getElementById('result');
             let advice = '';
@@ -260,86 +277,46 @@
             `;
         }
 
-        // 显示确认按钮
-        function showConfirmation() {
-            let seconds = 10;
-            const confirmBox = document.getElementById('confirmBox');
-            
-            function updateTimer() {
-                confirmBox.innerHTML = `
-                    <button onclick="saveRecord()" id="confirmBtn">
-                        确认记录（${seconds}秒）
-                    </button>
-                    <div class="countdown">未确认记录将在${seconds}秒后消失</div>
-                `;
-                
-                if (seconds <= 0) {
-                    clearInterval(countdownTimer);
-                    confirmBox.innerHTML = '';
-                    currentCalculation = null;
-                }
-                seconds--;
-            }
-
-            // 初始显示
-            updateTimer();
-            countdownTimer = setInterval(updateTimer, 1000);
-        }
-
-        // 保存记录
-        function saveRecord() {
-            if (!currentCalculation) return;
-
-            const historyEntry = {
-                date: currentCalculation.timestamp.toLocaleString('zh-CN'),
-                originalDose: currentCalculation.originalDose + 'mg',
-                symptoms: `注意力 ${currentCalculation.symptoms.attention}/5，多动 ${currentCalculation.symptoms.hyperactivity}/5，冲动 ${currentCalculation.symptoms.impulsivity}/5`,
-                sideEffects: currentCalculation.sideEffects.map(eff => 
-                    `${eff.type}（${eff.severity}/5）`
-                ).join('，'),
-                newDose: currentCalculation.newDose + 'mg'
-            };
-
-            // 保存到本地存储
-            let history = JSON.parse(localStorage.getItem('treatmentHistory')) || [];
-            history.unshift(historyEntry);
-            history = history.slice(0, 30);
-            localStorage.setItem('treatmentHistory', JSON.stringify(history));
-
-            // 刷新显示
-            renderHistory(history);
-            clearInterval(countdownTimer);
-            document.getElementById('confirmBox').innerHTML = '<div style="color:#48bb78;">✓ 记录已保存</div>';
-            currentCalculation = null;
-        }
-
-        // 渲染历史记录
+        // 历史记录渲染
         function renderHistory(history) {
-            const tbody = document.getElementById('historyBody');
-            tbody.innerHTML = history.map(entry => `
-                <tr>
-                    <td>${entry.date}</td>
-                    <td>${entry.originalDose}</td>
-                    <td>${entry.symptoms}</td>
-                    <td>${entry.sideEffects}</td>
-                    <td>${entry.newDose}</td>
-                </tr>
+            const desktopBody = document.getElementById('historyBody');
+            const mobileBody = document.getElementById('mobileHistory');
+            
+            desktopBody.innerHTML = history.map(entry => `
+                <div class="history-row">
+                    <div>${entry.date}</div>
+                    <div>${entry.originalDose}</div>
+                    <div>注意 ${entry.symptoms.attention}/5<br>多动 ${entry.symptoms.hyperactivity}/5<br>冲动 ${entry.symptoms.impulsivity}/5</div>
+                    <div>${entry.sideEffects}</div>
+                    <div>${entry.newDose}</div>
+                </div>
+            `).join('');
+
+            mobileBody.innerHTML = history.map(entry => `
+                <div class="history-card">
+                    <div><strong>日期：</strong>${entry.date}</div>
+                    <div><strong>原剂量：</strong>${entry.originalDose}</div>
+                    <div><strong>新剂量：</strong>${entry.newDose}</div>
+                    <div><strong>症状评分：</strong>注意 ${entry.symptoms.attention}/5，多动 ${entry.symptoms.hyperactivity}/5，冲动 ${entry.symptoms.impulsivity}/5</div>
+                    <div><strong>副作用：</strong>${entry.sideEffects}</div>
+                </div>
             `).join('');
         }
 
         // 初始化
         window.addEventListener('DOMContentLoaded', () => {
+            // 自动填充
+            initAutoFill();
+            
+            // 加载历史记录
             const history = JSON.parse(localStorage.getItem('treatmentHistory')) || [];
             renderHistory(history);
-            
-            // 实时更新严重度显示
+
+            // 初始化滑动条
             document.querySelectorAll('.severity').forEach(slider => {
-                slider.addEventListener('input', function(e) {
+                slider.addEventListener('input', (e) => {
                     const progress = (e.target.value / 5) * 100;
-                    const indicator = e.target.closest('.checkbox-item').querySelector('.severity-progress');
-                    if (indicator) {
-                        indicator.style.width = `${progress}%`;
-                    }
+                    e.target.style.background = `linear-gradient(to right, #48bb78 ${progress}%, #e2e8f0 ${progress}%)`;
                 });
             });
         });
