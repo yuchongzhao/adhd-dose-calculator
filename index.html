@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADHD精准剂量计算器</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            padding: 15px;
+            background: #f0f4f8;
+        }
+        .calculator {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .input-group {
+            margin-bottom: 25px;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        h3 {
+            color: #2b6cb0;
+            margin: 0 0 15px 0;
+            font-size: 1.1em;
+        }
+        label {
+            display: block;
+            color: #2d3748;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .highlight {
+            border-color: #4299e1 !important;
+            background: #ebf8ff;
+        }
+        .rating-scale {
+            display: flex;
+            justify-content: space-between;
+            color: #718096;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .side-effect-group {
+            margin: 15px 0;
+        }
+        select[multiple] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+        }
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+        }
+        .warning {
+            color: #e53e3e;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>ADHD精准剂量计算器</h2>
+
+        <!-- 基础信息 -->
+        <div class="input-group">
+            <h3>基本信息</h3>
+            <label>年龄（岁）</label>
+            <input type="number" id="age" min="6" max="70" value="18" required>
+            
+            <label>体重（kg）</label>
+            <input type="number" id="weight" min="20" max="150" step="0.1" value="60" required>
+        </div>
+
+        <!-- 症状评分 -->
+        <div class="input-group">
+            <h3>症状评分（1-5级）</h3>
+            <div class="symptom-group">
+                <label>注意力不集中</label>
+                <input type="range" min="1" max="5" value="3" class="symptom" id="attention">
+                <div class="rating-scale">
+                    <span>偶尔分心</span>
+                    <span>→</span>
+                    <span>无法集中</span>
+                </div>
+            </div>
+            <div class="symptom-group">
+                <label>多动表现</label>
+                <input type="range" min="1" max="5" value="3" class="symptom" id="hyperactivity">
+                <div class="rating-scale">
+                    <span>偶尔躁动</span>
+                    <span>→</span>
+                    <span>无法静坐</span>
+                </div>
+            </div>
+            <div class="symptom-group">
+                <label>冲动控制</label>
+                <input type="range" min="1" max="5" value="3" class="symptom" id="impulsivity">
+                <div class="rating-scale">
+                    <span>偶尔急躁</span>
+                    <span>→</span>
+                    <span>行为失控</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 当前剂量 -->
+        <div class="input-group">
+            <h3>当前剂量</h3>
+            <label>每日总剂量（mg）</label>
+            <input type="number" id="currentDose" min="0" max="100" step="5" value="0"
+                   oninput="highlightFive(this)">
+        </div>
+
+        <!-- 副作用评估 -->
+        <div class="input-group">
+            <h3>副作用评估</h3>
+            <label>选择出现的副作用：</label>
+            <select multiple id="sideEffects" size="5">
+                <option value="appetite">食欲减退</option>
+                <option value="sleep">入睡困难</option>
+                <option value="headache">头痛</option>
+                <option value="anxiety">焦虑紧张</option>
+                <option value="heart">心悸</option>
+            </select>
+            <div id="severitySection"></div>
+        </div>
+
+        <button onclick="calculateDose()">计算调整方案</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // 5倍数剂量高亮
+        function highlightFive(input) {
+            input.classList.toggle('highlight', input.value % 5 === 0);
+        }
+
+        // 副作用严重度动态生成
+        document.getElementById('sideEffects').addEventListener('change', function() {
+            let html = '';
+            Array.from(this.selectedOptions).forEach(option => {
+                html += `
+                    <div class="side-effect-group">
+                        <label>${option.text} 严重度</label>
+                        <input type="range" min="1" max="5" value="1" class="severity">
+                        <div class="rating-scale">
+                            <span>轻微</span>
+                            <span>→</span>
+                            <span>严重</span>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('severitySection').innerHTML = html;
+        });
+
+        // 核心计算逻辑
+        function calculateDose() {
+            // 获取输入值
+            const age = parseInt(document.getElementById('age').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const currentDose = parseInt(document.getElementById('currentDose').value) || 0;
+            
+            // 症状评分
+            const symptoms = {
+                attention: parseInt(document.getElementById('attention').value),
+                hyperactivity: parseInt(document.getElementById('hyperactivity').value),
+                impulsivity: parseInt(document.getElementById('impulsivity').value)
+            };
+
+            // 副作用处理
+            const sideEffects = Array.from(document.querySelectorAll('.severity'))
+                .reduce((sum, slider) => sum + parseInt(slider.value), 0);
+
+            // 计算调整量
+            const symptomScore = (symptoms.attention * 0.5) + 
+                               (symptoms.hyperactivity * 0.3) + 
+                               (symptoms.impulsivity * 0.2);
+            
+            let adjustment = 0;
+            
+            // 症状驱动增量
+            if(symptomScore >= 4) adjustment += 10;
+            else if(symptomScore >= 3) adjustment += 5;
+            
+            // 副作用驱动减量
+            if(sideEffects >= 15) adjustment -= 10;
+            else if(sideEffects >= 10) adjustment -= 5;
+            else if(sideEffects >= 5) adjustment -= 2.5;
+
+            // 剂量安全限制
+            const maxDose = age < 18 ? 
+                Math.min(60, weight * 1.2) : 
+                Math.min(100, weight * 1.5);
+            
+            const newDose = Math.min(maxDose, currentDose + adjustment);
+            
+            // 生成建议
+            let advice = '';
+            if(adjustment > 0) {
+                advice = `建议增加至 <strong>${newDose}mg/日</strong>（每次增加5mg）`;
+            } else if(adjustment < 0) {
+                advice = `建议减少至 <strong>${newDose}mg/日</strong>（每次减少5mg）`;
+            } else {
+                advice = "当前剂量合适，建议维持";
+            }
+
+            // 警告信息
+            let warnings = [];
+            if(newDose >= maxDose * 0.9) warnings.push("接近最大安全剂量");
+            if(sideEffects >= 15) warnings.push("严重副作用需立即就医");
+
+            // 显示结果
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <h3>调整建议</h3>
+                <p>${advice}</p>
+                ${warnings.length ? 
+                    `<div class="warning">⚠️ ${warnings.join('，')}</div>` : ''}
+                <p>计算依据：<br>
+                - 症状评分：${symptomScore.toFixed(1)}/5.0<br>
+                - 副作用负担：${sideEffects}/25</p>
+            `;
+        }
+    </script>
+</body>
+</html>
