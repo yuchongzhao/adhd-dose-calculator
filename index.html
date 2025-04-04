@@ -3,17 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>ADHD精准剂量计算器</title>
     <style>
         :root { font-size: 16px; }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, sans-serif;
             background: #f0f4f8;
             padding: 20px;
             min-height: 100vh;
@@ -32,18 +27,9 @@
             border: 1px solid #e2e8f0;
             border-radius: 10px;
         }
-        h2 {
-            color: #2b6cb0;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-        label {
-            display: block;
-            color: #2d3748;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-        input[type="number"], select {
+        h2 { color: #2b6cb0; margin-bottom: 25px; text-align: center; }
+        label { display: block; color: #2d3748; font-weight: 500; margin-bottom: 8px; }
+        input, select {
             width: 100%;
             padding: 12px;
             border: 2px solid #cbd5e0;
@@ -51,70 +37,25 @@
             font-size: 16px;
             margin-bottom: 15px;
         }
-        input[type="range"] {
-            width: 100%;
-            margin: 15px 0;
-        }
         button {
             background: #4299e1;
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 15px;
             border-radius: 8px;
             width: 100%;
             font-size: 16px;
             cursor: pointer;
             transition: background 0.3s;
         }
-        button:hover {
-            background: #3182ce;
-        }
-        #result {
-            margin-top: 25px;
-            padding: 20px;
-            background: #f7fafc;
-            border-radius: 10px;
-        }
-        .history-section {
-            margin-top: 30px;
-            border-top: 2px solid #e2e8f0;
-            padding-top: 20px;
-        }
-        .side-effect-form {
-            background: #f7fafc;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 25px;
-        }
-        #historyTable {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        #historyTable th {
-            background: #4299e1;
-            color: white;
-            padding: 12px;
-            text-align: left;
-        }
-        #historyTable td {
-            border: 1px solid #e2e8f0;
-            padding: 12px;
-        }
-        .severity-indicator {
-            width: 100px;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        .severity-progress {
-            height: 100%;
-            background: #48bb78;
-            width: var(--progress);
-            transition: width 0.3s;
-        }
+        #result { margin-top: 25px; padding: 20px; background: #f7fafc; border-radius: 10px; }
+        .history-section { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
+        .side-effect-form { background: #f7fafc; padding: 20px; border-radius: 10px; margin-top: 25px; }
+        #historyTable { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        #historyTable th { background: #4299e1; color: white; padding: 12px; text-align: left; }
+        #historyTable td { border: 1px solid #e2e8f0; padding: 12px; }
+        .severity-indicator { width: 100px; height: 8px; background: #e2e8f0; border-radius: 4px; margin: 10px 0; }
+        .severity-progress { height: 100%; background: #48bb78; transition: width 0.3s; }
         @media (prefers-color-scheme: dark) {
             body { background: #1a202c; }
             .calculator { background: #2d3748; }
@@ -126,7 +67,6 @@
     <div class="calculator">
         <h2>ADHD精准剂量计算器</h2>
 
-        <!-- 基础信息 -->
         <div class="input-group">
             <h3>基本信息</h3>
             <label>年龄（岁）</label>
@@ -136,29 +76,28 @@
             <input type="number" id="weight" min="20" max="150" step="0.1" value="60" required>
         </div>
 
-        <!-- 症状评分 -->
         <div class="input-group">
             <h3>症状评分（1-5级）</h3>
             <div class="symptom-group">
                 <label>注意力不集中</label>
-                <input type="range" min="1" max="5" value="3" class="symptom" id="attention">
-                <div class="rating-scale">
-                    <span>1级（轻度）</span>
-                    <span>5级（重度）</span>
-                </div>
+                <input type="range" min="1" max="5" value="3" id="attention">
             </div>
-            <!-- 重复同样结构添加多动和冲动评分 -->
+            <div class="symptom-group">
+                <label>多动表现</label>
+                <input type="range" min="1" max="5" value="3" id="hyperactivity">
+            </div>
+            <div class="symptom-group">
+                <label>冲动控制</label>
+                <input type="range" min="1" max="5" value="3" id="impulsivity">
+            </div>
         </div>
 
-        <!-- 当前剂量 -->
         <div class="input-group">
             <h3>当前剂量</h3>
             <label>每日总剂量（mg）</label>
-            <input type="number" id="currentDose" min="0" max="100" step="5" value="0"
-                   oninput="highlightFive(this)">
+            <input type="number" id="currentDose" min="0" max="100" step="5" value="0">
         </div>
 
-        <!-- 副作用评估 -->
         <div class="input-group">
             <h3>副作用评估</h3>
             <select multiple id="sideEffects" size="5">
@@ -174,46 +113,23 @@
         <button onclick="calculateDose()">计算调整方案</button>
         <div id="result"></div>
 
-        <!-- 新增功能模块 -->
         <div class="history-section">
-            <h3>📅 剂量历史记录</h3>
+            <h3>📅 用药记录</h3>
             <table id="historyTable">
                 <thead>
                     <tr>
                         <th>日期</th>
-                        <th>剂量 (mg)</th>
-                        <th>备注</th>
+                        <th>剂量(mg)</th>
+                        <th>副作用</th>
                     </tr>
                 </thead>
                 <tbody id="historyBody"></tbody>
             </table>
         </div>
-
-        <div class="side-effect-form">
-            <h3>⚠️ 副作用记录</h3>
-            <div>
-                <label>选择副作用类型：</label>
-                <select id="effectType">
-                    <option value="appetite">食欲减退</option>
-                    <option value="sleep">失眠</option>
-                    <option value="headache">头痛</option>
-                    <option value="anxiety">焦虑</option>
-                </select>
-            </div>
-            <div>
-                <label>严重程度 (1-5级)：</label>
-                <input type="range" id="effectSeverity" min="1" max="5" value="3">
-                <div class="severity-indicator">
-                    <div class="severity-progress" id="severityVisual"></div>
-                </div>
-            </div>
-            <button onclick="logSideEffect()">记录副作用</button>
-            <div id="effectHistory"></div>
-        </div>
     </div>
 
     <script>
-        // ================= 核心计算逻辑 =================
+        // 核心计算逻辑
         function calculateDose() {
             // 获取输入值
             const age = parseInt(document.getElementById('age').value);
@@ -271,95 +187,73 @@
                 - 副作用负担：${sideEffects}/25</p>
             `;
 
-            // 保存历史记录
-            saveDoseHistory(newDose);
+            // 自动记录
+            saveHistory(newDose, sideEffects);
         }
 
-        // ================= 新增功能逻辑 =================
-        const STORAGE_KEYS = {
-            HISTORY: 'doseHistory',
-            EFFECTS: 'sideEffects'
-        };
-
-        function saveDoseHistory(dose) {
-            const entry = {
+        // 历史记录功能
+        const STORAGE_KEY = 'treatmentHistory';
+        
+        function saveHistory(dose, sideEffects) {
+            const historyEntry = {
                 date: new Date().toLocaleDateString('zh-CN'),
                 dose: dose,
-                note: document.getElementById('result').innerText.substring(0, 50)
+                sideEffects: document.getElementById('sideEffects').selectedOptions.length,
+                severity: sideEffects
             };
             
-            let history = JSON.parse(localStorage.getItem(STORAGE_KEYS.HISTORY)) || [];
-            history.unshift(entry);
+            let history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            history.unshift(historyEntry);
             history = history.slice(0, 30); // 保留最近30条
             
-            localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(history));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
             renderHistory(history);
-        }
-
-        function logSideEffect() {
-            const effect = {
-                type: document.getElementById('effectType').value,
-                severity: parseInt(document.getElementById('effectSeverity').value),
-                timestamp: new Date().toISOString()
-            };
-            
-            let effects = JSON.parse(localStorage.getItem(STORAGE_KEYS.EFFECTS)) || [];
-            effects.unshift(effect);
-            effects = effects.slice(0, 50); // 保留最近50条
-            
-            localStorage.setItem(STORAGE_KEYS.EFFECTS, JSON.stringify(effects));
-            renderEffects(effects);
         }
 
         function renderHistory(history) {
             document.getElementById('historyBody').innerHTML = history.map(entry => `
                 <tr>
                     <td>${entry.date}</td>
-                    <td>${entry.dose}</td>
-                    <td>${entry.note}</td>
+                    <td>${entry.dose}mg</td>
+                    <td>${entry.sideEffects}种副作用（总严重度: ${entry.severity}）</td>
                 </tr>
             `).join('');
         }
 
-        function renderEffects(effects) {
-            document.getElementById('effectHistory').innerHTML = effects.map(effect => `
-                <div style="margin: 10px 0; padding: 10px; background: #fff; border-radius: 6px;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>${effect.type}</span>
-                        <span style="color: ${getSeverityColor(effect.severity)};">
-                            ${'★'.repeat(effect.severity)}
-                        </span>
+        // 副作用评估交互
+        document.getElementById('sideEffects').addEventListener('change', function() {
+            const selected = Array.from(this.selectedOptions);
+            let html = '';
+            
+            selected.forEach(option => {
+                html += `
+                    <div class="severity-group">
+                        <label>${option.text} 严重度</label>
+                        <input type="range" min="1" max="5" value="3" 
+                               class="severity" data-effect="${option.value}">
+                        <div class="severity-indicator">
+                            <div class="severity-progress" style="width: 60%"></div>
+                        </div>
                     </div>
-                    <small style="color: #718096;">${new Date(effect.timestamp).toLocaleDateString()}</small>
-                </div>
-            `).join('');
-        }
-
-        function getSeverityColor(level) {
-            const colors = ['#48bb78', '#ecc94b', '#f6ad55', '#f56565', '#c53030'];
-            return colors[level - 1] || '#718096';
-        }
-
-        // ================= 初始化逻辑 =================
-        document.getElementById('effectSeverity').addEventListener('input', function(e) {
-            const progress = (e.target.value / 5) * 100;
-            document.getElementById('severityVisual').style.width = `${progress}%`;
+                `;
+            });
+            
+            document.getElementById('severitySection').innerHTML = html;
+            
+            // 实时更新严重度显示
+            document.querySelectorAll('.severity').forEach(slider => {
+                slider.addEventListener('input', function(e) {
+                    const progress = (e.target.value / 5) * 100;
+                    e.target.nextElementSibling.querySelector('.severity-progress').style.width = `${progress}%`;
+                });
+            });
         });
 
+        // 初始化历史记录
         window.addEventListener('DOMContentLoaded', () => {
-            // 初始化历史记录
-            renderHistory(JSON.parse(localStorage.getItem(STORAGE_KEYS.HISTORY)) || []);
-            renderEffects(JSON.parse(localStorage.getItem(STORAGE_KEYS.EFFECTS)) || []);
-
-            // 移动端适配
-            if (/Mobi|Android/i.test(navigator.userAgent)) {
-                document.documentElement.style.fontSize = '18px';
-            }
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            renderHistory(history);
         });
-
-        function highlightFive(input) {
-            input.classList.toggle('highlight', input.value % 5 === 0);
-        }
     </script>
 </body>
 </html>
